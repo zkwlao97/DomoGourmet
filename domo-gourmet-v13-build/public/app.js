@@ -5005,18 +5005,137 @@ function showModal(node) {
     '</article>';
   }
 
-  var __fillPlanFromPointGroupsV11 = fillPlanFromPointGroups;
   function fillPlanFromPointGroups(pointGroups, options) {
     options = options || {};
-    return __fillPlanFromPointGroupsV11(pointGroups, options).then(function (story) {
-      var query = options.query || {};
+    var query = options.query || state.currentQuery || {};
+    var days = clamp(parseInt(query.days || '3', 10), 1, 10);
+    var tripStart = new Date((query.startDate || toDateInput(new Date())) + 'T00:00:00');
+    var groups = (pointGroups || []).filter(function (group) { return group && group.point; });
+    if (!groups.length) throw new Error('추천 일정에 쓸 기준 장소를 만들지 못했습니다.');
+
+    var allRestaurants = getMergedGroupResults(groups);
+    var usedRestaurantIds = new Set();
+    var previousGenre = '';
+    var wantedFoods = Array.isArray(options.wantedFoods) ? options.wantedFoods.slice() : [];
+    var unmetFoods = [];
+    var warningBits = [];
+    var cursor = 0;
+
+    state.plan = createPlan(days);
+    state.planPool = mergeById(state.planPool || [], allRestaurants);
+    state.planContext = savePlanContextV9({
+      region: query.regionDisplay || query.region || '',
+      catalogRegion: query.catalogRegion || '',
+      focusRegion: query.focusRegion || '',
+      wantedFoods: wantedFoods.slice(),
+      extraPlaces: parsePlaceLines(els.planExtraPlaces ? els.planExtraPlaces.value : ''),
+      days: days,
+      startDate: query.startDate || toDateInput(new Date()),
+      hotel: query.hotel || '',
+      hotelMapsLink: query.hotelMapsLink || '',
+      basePoint: groups[0] ? makePointDisplay(groups[0].point) : null,
+      hotelPoint: options.hotelPoint || null,
+      source: options.type || 'regional-auto',
+      importedFromSearch: Boolean(query.importedFromSearch),
+      aiUsed: Boolean(options.useAi)
+    });
+
+    var storyDays = [];
+    for (var dayIndex = 0; dayIndex < days; dayIndex += 1) {
+      var remainingGroups = groups.length - cursor;
+      var remainingDays = days - dayIndex;
+      if (remainingGroups <= 0) break;
+
+      var useTwoVisits = remainingGroups >= (remainingDays + 1);
+      var morningGroup = groups[cursor] || null;
+      cursor += 1;
+      var afternoonGroup = useTwoVisits ? (groups[cursor] || null) : null;
+      if (useTwoVisits && afternoonGroup) cursor += 1;
+
+      var morningPoint = morningGroup ? makePointDisplay(morningGroup.point) : null;
+      var afternoonPoint = afternoonGroup ? makePointDisplay(afternoonGroup.point) : null;
+      var date = addDays(tripStart, dayIndex);
+
+      var globalPool = allRestaurants.map(function (item) { return augmentRestaurant(item, morningPoint || getPlanContextBasePoint(), query.food || ''); });
+      var breakfastSource = getPlanContextHotelPoint() ? globalPool : ((morningGroup && morningGroup.results && morningGroup.results.length) ? morningGroup.results : globalPool);
+      var lunchSource = (morningGroup && morningGroup.results && morningGroup.results.length) ? morningGroup.results : globalPool;
+      var dinnerSource = (afternoonGroup && afternoonGroup.results && afternoonGroup.results.length)
+        ? afternoonGroup.results
+        : ((morningGroup && morningGroup.results && morningGroup.results.length) ? morningGroup.results : globalPool);
+
+      state.plan[dayIndex].hotel = getPlanContextHotelPoint() ? makePointDisplay(getPlanContextHotelPoint()) : null;
+      state.plan[dayIndex].visits = uniquePointsStrict([morningPoint, afternoonPoint]);
+
+      var breakfastPick = chooseRestaurantForSlot(breakfastSource, 'breakfast', date, previousGenre, usedRestaurantIds, '');
+      if (breakfastPick && breakfastPick.restaurant) {
+        usedRestaurantIds.add(breakfastPick.restaurant.id);
+        previousGenre = breakfastPick.restaurant.genreKo || breakfastPick.restaurant.genreOriginal || previousGenre;
+        state.plan[dayIndex].breakfast = makePlanMeal(breakfastPick.restaurant, date, '숙소 출발 전후 아침 식사');
+      }
+
+      var lunchWanted = wantedFoods[dayIndex * 2] || wantedFoods[dayIndex] || '';
+      var lunchPick = chooseRestaurantForSlot(lunchSource, 'lunch', date, previousGenre, usedRestaurantIds, lunchWanted);
+      if (lunchPick && lunchPick.restaurant) {
+        usedRestaurantIds.add(lunchPick.restaurant.id);
+        previousGenre = lunchPick.restaurant.genreKo || lunchPick.restaurant.genreOriginal || previousGenre;
+        state.plan[dayIndex].lunch = makePlanMeal(lunchPick.restaurant, date, (morningPoint ? formatPointName(morningPoint) : '오전 동선') + ' 근처 점심');
+        if (lunchWanted && !lunchPick.preferredMatched) unmetFoods.push(lunchWanted);
+      } else if (lunchWanted) {
+        unmetFoods.push(lunchWanted);
+      }
+
+      var dinnerWanted = wantedFoods[dayIndex * 2 + 1] || wantedFoods[dayIndex + 1] || '';
+      var dinnerPick = chooseRestaurantForSlot(dinnerSource, 'dinner', date, previousGenre, usedRestaurantIds, dinnerWanted);
+      if (dinnerPick && dinnerPick.restaurant) {
+        usedRestaurantIds.add(dinnerPick.restaurant.id);
+        previousGenre = dinnerPick.restaurant.genreKo || dinnerPick.restaurant.genreOriginal || previousGenre;
+        state.plan[dayIndex].dinner = makePlanMeal(dinnerPick.restaurant, date, (afternoonPoint ? formatPointName(afternoonPoint) : (morningPoint ? formatPointName(morningPoint) : '오후 동선')) + ' 근처 저녁');
+        if (dinnerWanted && !dinnerPick.preferredMatched) unmetFoods.push(dinnerWanted);
+      } else if (dinnerWanted) {
+        unmetFoods.push(dinnerWanted);
+      }
+
+      var titleBits = [];
+      if (morningPoint) titleBits.push(formatPointName(morningPoint));
+      if (afternoonPoint && normalize(formatPointName(afternoonPoint)) !== normalize(formatPointName(morningPoint))) titleBits.push(formatPointName(afternoonPoint));
+      storyDays.push({
+        day: dayIndex + 1,
+        title: titleBits.join(' → ') || ('Day ' + (dayIndex + 1)),
+        why: titleBits.length > 1
+          ? '오전에는 ' + titleBits[0] + ', 오후에는 ' + titleBits[1] + ' 쪽을 보도록 나누고 각 지점 근처에서 식사 시간을 맞추기 쉬운 곳을 골랐습니다.'
+          : (titleBits[0] ? titleBits[0] + ' 중심으로 하루 동선을 묶고 영업시간이 맞는 식당을 우선 배치했습니다.' : '영업시간이 맞는 식당을 우선 배치했습니다.'),
+      });
+    }
+
+    state.plan = resizePlan(state.plan, days);
+    saveJson(STORAGE.plan, state.plan);
+    renderPlan();
+    renderPlanSummary();
+
+    if (wantedFoods.length) {
+      var uniqueUnmet = unique(unmetFoods);
+      if (uniqueUnmet.length) warningBits.push('원하신 음식 중 ' + uniqueUnmet.join(', ') + '는 현재 방문지 근처 데이터에서 맞는 식당을 찾지 못해 일반 추천 식당으로 대체했습니다.');
+    }
+    if (groups.length < days * 2) warningBits.push('현재 ' + (query.regionDisplay || query.region || '해당 지역') + ' 데이터만으로는 전 날짜를 완전히 다른 방문지 두 곳씩 채우기 어려워 일부 날짜는 한 곳 중심 동선으로 구성했습니다.');
+    if (storyDays.length < days) warningBits.push('현재 데이터 기준으로는 ' + storyDays.length + '일차까지가 가장 자연스러워 나머지 날짜는 빈칸으로 두었습니다.');
+    if (els.planWarnings) {
+      els.planWarnings.innerHTML = warningBits.length ? ('<div class="message-box info">' + escapeHtml(warningBits.join(' ')) + '</div>') : '<div class="message-box success">추천 일정을 만들었습니다.</div>';
+    }
+
+    return maybeEnhancePlanStoryWithAi({
+      type: options.type || 'nearby-multi',
+      aiUsed: false,
+      overview: options.overviewSeed || '추천 일정 설명',
+      days: storyDays,
+    }, options.useAi).then(function (story) {
       state.planContext = savePlanContextV9(Object.assign({}, state.planContext || {}, {
         region: query.regionDisplay || query.region || (state.planContext && state.planContext.region) || '',
         catalogRegion: query.catalogRegion || (state.planContext && state.planContext.catalogRegion) || '',
         focusRegion: query.focusRegion || (state.planContext && state.planContext.focusRegion) || '',
-        wantedFoods: Array.isArray(options.wantedFoods) ? options.wantedFoods.slice() : ((state.planContext && state.planContext.wantedFoods) || []),
+        wantedFoods: wantedFoods.slice(),
         extraPlaces: parsePlaceLines(els.planExtraPlaces ? els.planExtraPlaces.value : ''),
-        source: options.type || (state.planContext && state.planContext.source) || 'regional-auto'
+        source: options.type || (state.planContext && state.planContext.source) || 'regional-auto',
+        aiUsed: Boolean(story && story.aiUsed)
       }));
       renderPlanSummary();
       return story;
