@@ -1,0 +1,12 @@
+{
+  "name": "domo-gourmet-japan",
+  "version": "1.0.1",
+  "private": true,
+  "description": "일본 여행자용 맛집 탐색 및 음식 중심 일정 플래너",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
