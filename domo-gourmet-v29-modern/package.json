@@ -1,0 +1,15 @@
+{
+  "name": "domo-gourmet-v29-modern",
+  "version": "1.0.0",
+  "private": true,
+  "description": "일본 여행 일정/맛집/콘텐츠/커뮤니티 테스트 서비스",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0"
+  }
+}
