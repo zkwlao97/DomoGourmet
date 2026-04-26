@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: domo-gourmet-v31
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
