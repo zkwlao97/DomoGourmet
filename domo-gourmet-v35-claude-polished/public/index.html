@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>도모구르메 — 일본 맛집과 동선을 한 번에</title>
+  <meta name="description" content="관광지와 숙소 동선을 기준으로 일본 맛집과 식사 일정을 정리하는 여행자용 플래너" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+
+    <!-- HEADER -->
+    <header class="site-header" id="top">
+      <div class="header-inner">
+        <a class="brand" href="#search" aria-label="도모구르메 홈">
+          <div class="brand-logo"><span class="brand-icon">旅</span></div>
+          <div class="brand-text">
+            <strong>도모구르메</strong>
+            <small>일본 맛집과 동선을 한 번에</small>
+          </div>
+        </a>
+        <nav class="center-nav">
+          <button id="nav-search-view" class="nav-tab active" type="button">맛집 찾기</button>
+          <button id="nav-plan-view" class="nav-tab" type="button">내 일정표</button>
+          <button id="nav-curated-view" class="nav-tab" type="button">관리자 추천</button>
+          <button id="nav-content-view" class="nav-tab" type="button">콘텐츠</button>
+          <button id="nav-community-view" class="nav-tab" type="button">커뮤니티</button>
+          <button id="nav-admin-view" class="nav-tab hidden" type="button">관리자</button>
+        </nav>
+        <div class="nav-actions">
+          <div class="status-badges">
+            <span class="status-badge" data-service="hotpepper"><span id="status-hotpepper" class="status-dot off"></span><span class="status-name">Hot Pepper</span><span id="status-hotpepper-header-2" class="status-state">확인 중</span></span>
+            <span class="status-badge" data-service="gemini"><span id="status-gemini" class="status-dot off"></span><span class="status-name">Gemini</span><span id="status-gemini-header" class="status-state">확인 중</span></span>
+            <span id="status-hotpepper-header" class="sr-only"></span>
+          </div>
+          <button id="admin-login-open" class="btn btn-outline" type="button">로그인</button>
+          <button id="admin-logout-button" class="btn btn-outline hidden" type="button">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- SEARCH BAR -->
+    <div class="search-bar-strip">
+      <div class="search-bar-inner">
+        <div class="search-field-group">
+          <label class="search-field">
+            <span class="sf-icon">📍</span>
+            <div class="sf-body">
+              <span class="sf-label">여행 지역</span>
+              <input id="region-input" type="text" placeholder="도쿄, 오사카..." class="sf-input" />
+            </div>
+          </label>
+          <div class="sf-divider"></div>
+          <label class="search-field">
+            <span class="sf-icon">🗺</span>
+            <div class="sf-body">
+              <span class="sf-label">기준 장소 또는 관광지</span>
+              <input id="base-input" type="text" placeholder="시부야, 센소지..." class="sf-input" />
+            </div>
+          </label>
+          <div class="sf-divider"></div>
+          <label class="search-field">
+            <span class="sf-icon">🏨</span>
+            <div class="sf-body">
+              <span class="sf-label">숙소 (선택)</span>
+              <input id="hotel-input" type="text" placeholder="호텔 이름..." class="sf-input" />
+            </div>
+          </label>
+          <div class="sf-divider"></div>
+          <label class="search-field">
+            <span class="sf-icon">🍜</span>
+            <div class="sf-body">
+              <span class="sf-label">먹고 싶은 음식</span>
+              <input id="food-input" type="text" placeholder="라멘, 오코노미야키..." class="sf-input" />
+            </div>
+          </label>
+          <div class="sf-divider"></div>
+          <label class="search-field search-field-sm">
+            <span class="sf-icon">📅</span>
+            <div class="sf-body">
+              <span class="sf-label">여행 시작일</span>
+              <input id="start-date-input" type="date" class="sf-input" />
+            </div>
+          </label>
+          <div class="sf-divider"></div>
+          <div class="search-field search-field-xs">
+            <div class="sf-body">
+              <span class="sf-label">여행 일수</span>
+              <div class="days-counter">
+                <button type="button" class="days-btn" id="days-minus">−</button>
+                <input id="days-input" type="number" min="1" max="10" value="3" class="sf-input days-num" />
+                <span class="days-unit">일</span>
+                <button type="button" class="days-btn" id="days-plus">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- hidden fields -->
+        <input id="maps-link-input" type="url" class="hidden" />
+        <input id="hotel-maps-link-input" type="url" class="hidden" />
+
+        <div class="search-bar-actions">
+          <div class="theme-chips-row">
+            <span class="theme-label">테마</span>
+            <div class="chips" id="quick-chip-row">
+              <button type="button" class="chip" data-food="관광">🗾 관광</button>
+              <button type="button" class="chip" data-food="휴양">♨️ 휴양</button>
+              <button type="button" class="chip active" data-food="애니">🎌 애니</button>
+              <button type="button" class="chip" data-food="패션">👗 패션</button>
+              <button type="button" class="chip" data-food="먹방">🍱 먹방</button>
+            </div>
+          </div>
+          <div class="search-cta-group">
+            <button id="auto-plan-button" class="btn btn-ai" type="button">✨ AI로 일정 만들기</button>
+            <button id="search-button" class="btn btn-primary-large" type="button">맛집 검색</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <main class="main-container view-stack">
+
+      <!-- SEARCH VIEW -->
+      <section id="search-view" class="page-view">
+        <div id="search-feedback" class="feedback-bar hidden"></div>
+        <div id="search-suggestions" class="suggestions-wrap"></div>
+        <div id="api-status" class="sr-only"></div>
+        <span id="mode-badge" class="sr-only"></span>
+
+        <div class="search-layout">
+          <div class="results-col">
+            <div class="filter-row">
+              <div class="filter-row-left">
+                <label class="range-label-inline">
+                  <span>최소 추천 점수</span>
+                  <input id="min-score-input" type="range" min="1" max="5" step="0.1" value="3" />
+                  <strong id="min-score-value">3.0점 이상</strong>
+                </label>
+                <button id="demo-button" class="btn-text" type="button">데모 데이터</button>
+              </div>
+              <div class="filter-row-right">
+                <label class="sort-inline">
+                  <span>정렬</span>
+                  <select id="sort-select">
+                    <option value="food">음식 일치 우선</option>
+                    <option value="distance">거리순</option>
+                    <option value="score">추천 점수순</option>
+                  </select>
+                </label>
+                <button class="btn btn-ghost-sm" type="button" id="open-plan-button-secondary" onclick="document.getElementById('open-plan-button').click()">일정표 보기</button>
+              </div>
+            </div>
+            <div class="section-title-row">
+              <div>
+                <h2 class="section-title">맛집 추천</h2>
+                <p class="section-sub" id="results-meta">AI가 테마와 동선을 고려해 추천한 맛집이에요.</p>
+              </div>
+            </div>
+            <div id="results-list" class="results-grid"></div>
+            <div id="results-pagination" class="pagination-row"></div>
+          </div>
+
+          <aside class="sidebar-col">
+            <div class="sidebar-card">
+              <p class="sidebar-card-label">기준 장소</p>
+              <h3 class="sidebar-card-title">이번 검색의 중심점</h3>
+              <div id="base-point-box"></div>
+              <div class="helper-note" id="booking-guide">예약 버튼이 보이면 Hot Pepper 예약 페이지로 이동합니다.</div>
+            </div>
+            <div class="sidebar-card plan-preview-card">
+              <div class="plan-preview-header">
+                <p class="sidebar-card-label">추천 일정</p>
+                <button class="btn-text-small" id="open-plan-button" type="button">전체 보기 →</button>
+              </div>
+              <div id="plan-summary" class="plan-preview-list"></div>
+            </div>
+            <div class="sidebar-card">
+              <p class="sidebar-card-label">지역 인사이트</p>
+              <h3 class="sidebar-card-title">이 지역에서 자주 보인 음식</h3>
+              <div id="region-insights"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- PLAN VIEW -->
+      <section id="plan-view" class="page-view hidden">
+        <div class="page-header-bar">
+          <div>
+            <p class="page-kicker">내 일정표</p>
+            <h2 class="page-title">음식 중심 여행 일정을 따로 모아봤습니다</h2>
+            <p class="page-sub">아침 05:00–11:00 · 점심 11:00–15:00 · 저녁 17:00–22:30 기준으로 영업시간을 확인합니다.</p>
+          </div>
+          <div class="page-header-actions">
+            <button id="plan-fill-blank-button" class="btn btn-ai-sm hidden" type="button">✨ 빈 일정 AI 보강</button>
+            <button id="clear-plan-button" class="btn btn-ghost-sm" type="button">일정 비우기</button>
+            <button id="back-to-search-button" class="btn btn-outline-sm" type="button">← 검색으로</button>
+          </div>
+        </div>
+        <div class="plan-overview-strip">
+          <div id="plan-story" class="plan-story-box"></div>
+        </div>
+        <div id="plan-warnings" class="plan-warnings"></div>
+        <div id="plan-loading" class="loading-inline hidden" aria-live="polite"><span class="spinner"></span><span>일정을 만드는 중입니다...</span></div>
+        <div id="plan-route-cards" class="plan-route-cards"></div>
+        <div class="content-card">
+          <div class="table-wrap">
+            <table class="plan-table">
+              <thead><tr><th>일차</th><th>식사</th><th>식당</th><th>메모</th><th>동작</th></tr></thead>
+              <tbody id="plan-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="admin-panel" class="content-card hidden">
+          <p class="page-kicker">관리자 전용</p>
+          <h3 class="content-card-title">관리자 추천 배지 관리</h3>
+          <div class="search-grid">
+            <label class="form-label"><span>식당 선택</span><select id="admin-restaurant-select"></select></label>
+            <label class="form-label"><span>추천 이유</span><input id="admin-reason" type="text" placeholder="예: 라디오회관 동선과 잘 맞고 혼밥이 편했습니다." /></label>
+          </div>
+          <div class="action-row"><button id="admin-save-button" class="btn btn-primary" type="button">추천 저장</button></div>
+          <ul id="admin-list" class="admin-list"></ul>
+        </div>
+      </section>
+
+      <!-- CURATED VIEW -->
+      <section id="curated-view" class="page-view hidden">
+        <div class="page-header-bar">
+          <div>
+            <p class="page-kicker">관리자 추천</p>
+            <h2 class="page-title">지역별로 모아본 관리자 추천 식당</h2>
+            <p class="page-sub">직접 먹어보고 추천하는 맛집만 모았습니다.</p>
+          </div>
+          <button id="curated-refresh-button" class="btn btn-ghost-sm" type="button">새로고침</button>
+        </div>
+        <div class="content-card">
+          <div class="filter-inline-row">
+            <label class="form-label-inline"><span>지역</span><input id="curated-region-filter" type="text" placeholder="예: 도쿄, 가고시마" /></label>
+            <label class="form-label-inline"><span>음식 / 식당</span><input id="curated-food-filter" type="text" placeholder="예: 오코노미야키, 풍월" /></label>
+          </div>
+          <div id="curated-list" class="curated-region-list"></div>
+        </div>
+      </section>
+
+      <!-- CONTENT VIEW -->
+      <section id="content-view" class="page-view hidden">
+        <div class="page-header-bar">
+          <div>
+            <p class="page-kicker">콘텐츠</p>
+            <h2 class="page-title">관리자가 직접 정리한 여행 루트와 가이드</h2>
+            <p class="page-sub">옷 구경, 애니, 관광, 요양처럼 테마별 루트 글을 모아봅니다.</p>
+          </div>
+        </div>
+        <div class="content-card">
+          <div class="filter-inline-row">
+            <label class="form-label-inline"><span>검색</span><input id="content-search-input" type="text" placeholder="예: 하라주쿠, 패션, 오타쿠" /></label>
+            <label class="form-label-inline"><span>테마</span><input id="content-theme-filter" type="text" placeholder="예: 패션, 애니, 관광" /></label>
+          </div>
+          <div id="content-list" class="content-post-list"></div>
+        </div>
+      </section>
+
+      <!-- COMMUNITY VIEW -->
+      <section id="community-view" class="page-view hidden">
+        <div class="community-layout">
+          <div class="content-card community-write-card">
+            <p class="page-kicker">커뮤니티 글쓰기</p>
+            <h2 class="community-write-title">다른 여행자와 장소 정보를 나눠 주세요</h2>
+            <div class="search-grid">
+              <label class="form-label"><span>작성자 이름</span><input id="community-nickname" type="text" placeholder="예: 도쿄혼행러" /></label>
+              <label class="form-label"><span>지역</span><input id="community-region" type="text" placeholder="예: 도쿄, 오사카" /></label>
+              <label class="form-label full-span"><span>제목</span><input id="community-title" type="text" placeholder="예: 하라주쿠 패션 쇼핑 동선 추천" /></label>
+              <label class="form-label"><span>테마</span><input id="community-themes" type="text" placeholder="예: 패션, 관광, 혼행" /></label>
+              <label class="form-label full-span"><span>내용</span><textarea id="community-body" rows="4" placeholder="예: 오전에는 하라주쿠, 오후에는 오모테산도로 넘어가면 걷기 편합니다."></textarea></label>
+            </div>
+            <div class="helper-note-titled">장소 추가</div>
+            <div class="search-grid">
+              <label class="form-label"><span>장소 이름</span><input id="community-place-query" type="text" placeholder="예: 라포레 하라주쿠" /></label>
+              <label class="form-label"><span>Google Maps 링크</span><input id="community-place-link" type="url" placeholder="예: https://maps.google.com/..." /></label>
+              <label class="form-label"><span>짧은 설명</span><input id="community-place-note" type="text" placeholder="예: 시작점, 꼭 들를 편집샵" /></label>
+            </div>
+            <div class="action-row">
+              <button id="community-place-fill" class="btn btn-secondary-sm" type="button">위치 채우기</button>
+              <button id="community-place-add" class="btn btn-ghost-sm" type="button">장소 추가</button>
+            </div>
+            <p id="community-place-message" class="muted-text small-text"></p>
+            <div id="community-place-list" class="route-place-editor"></div>
+            <div class="action-row"><button id="community-submit" class="btn btn-primary" type="button">커뮤니티 글 등록</button></div>
+            <div id="community-submit-message"></div>
+          </div>
+          <div class="community-posts-col">
+            <div class="community-list-header">
+              <div><p class="page-kicker">커뮤니티</p><h2 class="page-title-sm">최근 등록된 여행 팁</h2></div>
+              <label class="form-label-inline"><span>검색</span><input id="community-search-input" type="text" placeholder="예: 하라주쿠, 카페, 애니" /></label>
+            </div>
+            <div id="community-list" class="content-post-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN VIEW -->
+      <section id="admin-view" class="page-view hidden">
+        <div class="page-header-bar">
+          <div><p class="page-kicker">관리자 페이지</p><h2 class="page-title">추천 식당과 수동 등록 식당을 한곳에서 관리합니다</h2></div>
+          <button id="admin-refresh-button" class="btn btn-ghost-sm" type="button">데이터 새로고침</button>
+        </div>
+        <p id="admin-data-path" class="muted-text small-text admin-data-path"></p>
+        <div class="content-card">
+          <p class="page-kicker">테마 장소 등록</p><h3 class="content-card-title">콘텐츠와 추천 일정에 쓸 장소 DB</h3>
+          <div class="search-grid">
+            <label class="form-label"><span>장소 이름</span><input id="theme-place-query" type="text" placeholder="예: 라포레 하라주쿠" /></label>
+            <label class="form-label"><span>Google Maps 링크</span><input id="theme-place-link" type="url" /></label>
+            <label class="form-label"><span>지역</span><input id="theme-place-region" type="text" placeholder="예: 도쿄" /></label>
+            <label class="form-label"><span>세부 지역</span><input id="theme-place-area" type="text" placeholder="예: 하라주쿠" /></label>
+            <label class="form-label"><span>테마</span><input id="theme-place-themes" type="text" placeholder="예: 패션, 애니, 관광" /></label>
+            <label class="form-label full-span"><span>설명</span><input id="theme-place-description" type="text" /></label>
+          </div>
+          <div class="action-row">
+            <button id="theme-place-fill" class="btn btn-secondary-sm" type="button">링크 / 이름으로 위치 채우기</button>
+            <button id="theme-place-save" class="btn btn-primary" type="button">테마 장소 저장</button>
+          </div>
+          <p id="theme-place-message" class="muted-text small-text"></p>
+          <div id="theme-place-registry" class="content-post-list compact-list"></div>
+        </div>
+        <div class="content-card">
+          <p class="page-kicker">테마 일정 템플릿</p><h3 class="content-card-title">관리자 추천 일정의 기반 템플릿</h3>
+          <div class="search-grid">
+            <label class="form-label"><span>템플릿 이름</span><input id="theme-template-title" type="text" placeholder="예: 하라주쿠 패션 반나절" /></label>
+            <label class="form-label"><span>지역</span><input id="theme-template-region" type="text" placeholder="예: 도쿄" /></label>
+            <label class="form-label"><span>테마</span><input id="theme-template-themes" type="text" placeholder="예: 패션, 관광" /></label>
+            <label class="form-label"><span>권장 음식</span><input id="theme-template-foods" type="text" placeholder="예: 카페, 라멘" /></label>
+            <label class="form-label full-span"><span>설명</span><input id="theme-template-description" type="text" /></label>
+            <label class="form-label"><span>등록 장소 선택</span><select id="theme-template-place-select"></select></label>
+          </div>
+          <div class="action-row">
+            <button id="theme-template-add-place" class="btn btn-secondary-sm" type="button">템플릿 경로에 추가</button>
+            <button id="theme-template-save" class="btn btn-primary" type="button">템플릿 저장</button>
+          </div>
+          <div id="theme-template-route" class="route-place-editor"></div>
+          <p id="theme-template-message" class="muted-text small-text"></p>
+          <div id="theme-template-list" class="content-post-list compact-list"></div>
+        </div>
+        <div class="content-card">
+          <p class="page-kicker">콘텐츠 글 작성</p><h3 class="content-card-title">원본 가이드와 루트 글 쓰기</h3>
+          <div class="search-grid">
+            <label class="form-label full-span"><span>제목</span><input id="content-title" type="text" placeholder="예: 하라주쿠 · 오모테산도 옷 구경 최적화 루트" /></label>
+            <label class="form-label"><span>카테고리</span><input id="content-category" type="text" placeholder="예: 패션 루트" /></label>
+            <label class="form-label"><span>지역</span><input id="content-region" type="text" placeholder="예: 도쿄" /></label>
+            <label class="form-label"><span>테마</span><input id="content-themes" type="text" placeholder="예: 패션, 쇼핑" /></label>
+            <label class="form-label full-span"><span>요약</span><input id="content-summary" type="text" /></label>
+            <label class="form-label full-span"><span>커버 이미지 URL</span><input id="content-cover-image" type="url" /></label>
+            <label class="form-label full-span"><span>본문</span><textarea id="content-body" rows="5"></textarea></label>
+            <label class="form-label"><span>등록 장소 선택</span><select id="content-place-select"></select></label>
+          </div>
+          <div class="action-row">
+            <button id="content-add-place" class="btn btn-secondary-sm" type="button">루트에 장소 추가</button>
+            <button id="content-save" class="btn btn-primary" type="button">콘텐츠 저장</button>
+          </div>
+          <div id="content-route-builder" class="route-place-editor"></div>
+          <p id="content-save-message" class="muted-text small-text"></p>
+        </div>
+        <div class="content-card">
+          <p class="page-kicker">수동 식당 등록</p><h3 class="content-card-title">Hot Pepper에 없는 식당을 직접 등록</h3>
+          <div class="search-grid">
+            <label class="form-label full-span"><span>Google Maps 링크</span><input id="custom-maps-link" type="url" /></label>
+            <div class="action-row full-span">
+              <button id="custom-fill-from-link" class="btn btn-secondary-sm" type="button">링크에서 이름 / 좌표 채우기</button>
+              <p id="custom-link-message" class="muted-text small-text"></p>
+            </div>
+            <label class="form-label"><span>가게 이름(한국어)</span><input id="custom-name-ko" type="text" /></label>
+            <label class="form-label"><span>가게 이름(원문)</span><input id="custom-name-original" type="text" /></label>
+            <label class="form-label"><span>지역</span><input id="custom-region-ko" type="text" /></label>
+            <label class="form-label"><span>세부 지역</span><input id="custom-area-ko" type="text" /></label>
+            <label class="form-label"><span>음식 종류</span><input id="custom-genre-ko" type="text" /></label>
+            <label class="form-label"><span>대표 메뉴</span><input id="custom-signature-menu" type="text" /></label>
+            <label class="form-label full-span"><span>주소</span><input id="custom-address-ko" type="text" /></label>
+            <label class="form-label"><span>사진 URL</span><input id="custom-photo" type="url" /></label>
+            <label class="form-label"><span>가게 URL</span><input id="custom-url" type="url" /></label>
+            <label class="form-label"><span>운영시간</span><input id="custom-open" type="text" /></label>
+            <label class="form-label"><span>휴무</span><input id="custom-close" type="text" /></label>
+            <label class="form-label full-span"><span>관리자 추천 이유</span><textarea id="custom-admin-reason" rows="3"></textarea></label>
+          </div>
+          <div class="action-row"><button id="custom-save-button" class="btn btn-primary" type="button">수동 식당 저장</button></div>
+          <div id="custom-save-message"></div>
+        </div>
+        <div class="content-card">
+          <p class="page-kicker">관리자 추천 관리</p><h3 class="content-card-title">지역별 추천 식당 목록</h3>
+          <div class="filter-inline-row">
+            <label class="form-label-inline"><span>지역</span><input id="admin-region-filter" type="text" placeholder="예: 도쿄" /></label>
+            <label class="form-label-inline"><span>음식 / 식당</span><input id="admin-food-filter" type="text" placeholder="예: 라멘" /></label>
+          </div>
+          <div id="admin-grouped-list" class="curated-region-list"></div>
+        </div>
+        <div class="content-card">
+          <p class="page-kicker">수동 등록 식당</p><h3 class="content-card-title">관리자가 추가한 식당 목록</h3>
+          <div id="admin-custom-list" class="curated-region-list"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="feature-footer">
+      <div class="feature-footer-inner">
+        <div class="feature-item"><span class="feature-icon">🤖</span><div><strong>AI 맞춤 추천</strong><p>테마와 동선을 고려한 최적의 맛집 일정</p></div></div>
+        <div class="feature-item"><span class="feature-icon">🗺</span><div><strong>실시간 동선 최적화</strong><p>교통, 거리, 영업시간을 반영한 최적 경로</p></div></div>
+        <div class="feature-item"><span class="feature-icon">📋</span><div><strong>테마 템플릿 제공</strong><p>여행 스타일에 맞는 다양한 일정 템플릿</p></div></div>
+        <div class="feature-item"><span class="feature-icon">📌</span><div><strong>내 일정 관련 관리</strong><p>저장, 공유, 일정까지 한 번에</p></div></div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODALS -->
+  <div id="schedule-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="schedule"></div>
+    <div class="modal-card">
+      <div class="modal-head"><h3 id="schedule-title">일정에 추가</h3><button type="button" class="icon-button" data-close="schedule">✕</button></div>
+      <input type="hidden" id="dialog-restaurant-id" />
+      <label class="form-label"><span>날짜</span><input id="dialog-date" type="date" /></label>
+      <label class="form-label"><span>식사 시간대</span><select id="dialog-slot"><option value="breakfast">아침</option><option value="lunch" selected>점심</option><option value="dinner">저녁</option></select></label>
+      <p id="dialog-message" class="muted-text small-text"></p>
+      <label class="form-label"><span>메모</span><input id="dialog-note" type="text" placeholder="예: 라디오회관 구경 후 방문" /></label>
+      <div class="action-row">
+        <button id="dialog-save" class="btn btn-primary" type="button">일정에 넣기</button>
+        <button id="dialog-cancel" class="btn btn-secondary-sm" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-login-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="admin"></div>
+    <div class="modal-card modal-card-auth">
+      <div class="auth-side">
+        <div class="auth-logo"><div class="brand-logo brand-logo-sm"><span class="brand-icon">旅</span></div><strong>도모구르메</strong></div>
+        <h3>내 일정과 커뮤니티 글을 관리해 보세요</h3>
+        <p class="auth-desc">일반 사용자 계정으로 로그인하면 내가 쓴 커뮤니티 글을 직접 삭제할 수 있고, 관리자 계정으로 로그인하면 관리자 페이지도 함께 열립니다.</p>
+        <ul class="auth-features"><li>✓ 일정 저장 및 관리</li><li>✓ 추천 일정 바로 담기</li><li>✓ 내 글 삭제 가능</li></ul>
+      </div>
+      <div class="auth-main">
+        <div class="modal-head auth-head">
+          <div class="auth-tabs"><button id="account-mode-login" class="auth-tab active" type="button">로그인</button><button id="account-mode-signup" class="auth-tab" type="button">회원가입</button></div>
+          <button type="button" class="icon-button" data-close="admin">✕</button>
+        </div>
+        <input id="account-auth-mode" type="hidden" value="login" />
+        <label class="form-label"><span>이메일 또는 아이디</span><input id="admin-id-input" type="text" autocomplete="username" placeholder="예: user@example.com 또는 admin" /></label>
+        <label class="form-label"><span>비밀번호</span><input id="admin-password-input" type="password" autocomplete="current-password" placeholder="비밀번호를 입력해 주세요" /></label>
+        <label id="account-nickname-row" class="form-label hidden"><span>닉네임</span><input id="account-nickname-input" type="text" placeholder="커뮤니티에 표시될 닉네임" /></label>
+        <p id="admin-login-message" class="muted-text small-text"></p>
+        <div class="action-row">
+          <button id="admin-login-submit" class="btn btn-primary" type="button">로그인</button>
+          <button id="admin-login-cancel" class="btn btn-secondary-sm" type="button">취소</button>
+        </div>
+        <p class="auth-hint">로그인 후 계정 상태에 따라 사용할 수 있는 메뉴가 달라집니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-recommend-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="admin-recommend"></div>
+    <div class="modal-card">
+      <div class="modal-head"><h3 id="admin-recommend-title">관리자 추천 설정</h3><button type="button" class="icon-button" data-close="admin-recommend">✕</button></div>
+      <input type="hidden" id="admin-recommend-restaurant-id" />
+      <label class="form-label"><span>추천 이유</span><textarea id="admin-recommend-reason" rows="4" placeholder="예: 라디오회관에서 걸어가기 편하고 혼밥이 쉬웠습니다."></textarea></label>
+      <p id="admin-recommend-message" class="muted-text small-text"></p>
+      <div class="action-row">
+        <button id="admin-recommend-save" class="btn btn-primary" type="button">추천 저장</button>
+        <button id="admin-recommend-remove" class="btn btn-ghost-sm" type="button">추천 해제</button>
+        <button id="admin-recommend-cancel" class="btn btn-secondary-sm" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="plan-option-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="plan-option"></div>
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head"><h3>AI로 일정 만들기 ✨</h3><button type="button" class="icon-button" data-close="plan-option">✕</button></div>
+      <div class="plan-option-grid">
+        <label class="plan-option-item"><input type="radio" name="plan-mode" value="nearby" checked /><div><strong>내가 갈 곳 근처 맛집으로 채우기</strong><p>Google Maps 링크나 장소명을 여러 줄로 넣으면, 입력한 장소를 우선 쓰고 부족한 칸은 가까운 인기 장소를 자동으로 더해 일정을 짭니다.</p></div></label>
+        <label class="plan-option-item"><input type="radio" name="plan-mode" value="full" /><div><strong>지역 기준 자동 여행 코스 짜기</strong><p>도쿄 · 오사카 · 후쿠오카처럼 대표 지역은 1주일 일정까지 버틸 수 있게 오전 / 오후 방문지와 식사를 묶어 추천합니다.</p></div></label>
+      </div>
+      <label class="checkbox-row"><input id="plan-import-current" type="checkbox" /><span>현재 검색창에 넣어둔 지역 / 숙소 / 일정 정보를 가져오기</span></label>
+      <div class="search-grid">
+        <label class="form-label"><span>여행 지역</span><input id="plan-region-input" type="text" placeholder="예: 도쿄, 오사카, 후쿠오카" /></label>
+        <label class="form-label"><span>여행 시작일</span><input id="plan-start-date-input" type="date" /></label>
+        <label class="form-label"><span>여행 일수</span><input id="plan-days-input" type="number" min="1" max="10" value="3" /></label>
+        <label class="form-label"><span>숙소 이름</span><input id="plan-hotel-input" type="text" /></label>
+        <label class="form-label full-span"><span>숙소 Google Maps 링크</span><input id="plan-hotel-maps-link-input" type="url" /></label>
+      </div>
+      <label class="form-label"><span>방문 후보 장소 / Google Maps 링크</span><textarea id="plan-extra-places" rows="4" placeholder="예: 아키하바라 라디오회관&#10;https://maps.google.com/...&#10;센소지"></textarea></label>
+      <label class="form-label"><span>이번 여행에서 꼭 먹고 싶은 음식</span><input id="plan-wanted-foods" type="text" placeholder="예: 오코노미야키, 라멘, 스시" /></label>
+      <div>
+        <span class="form-label-text">테마 선택</span>
+        <div id="plan-theme-options" class="theme-chip-grid"></div>
+        <p class="muted-text small-text">관리자가 미리 저장한 테마 장소와 루트를 일정 후보에 먼저 반영합니다.</p>
+      </div>
+      <label class="checkbox-row"><input id="plan-use-ai" type="checkbox" /><span>Gemini로 일정 설명과 번역을 더 자연스럽게 만들기</span></label>
+      <p id="plan-ai-state" class="muted-text small-text"></p>
+      <p id="plan-option-message" class="muted-text small-text"></p>
+      <div id="plan-option-loading" class="loading-inline hidden" aria-live="polite"><span class="spinner"></span><span>일정을 만드는 중입니다...</span></div>
+      <div class="action-row">
+        <button id="plan-option-generate" class="btn btn-ai" type="button">✨ 이 방식으로 일정 만들기</button>
+        <button id="plan-option-cancel" class="btn btn-secondary-sm" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating dock -->
+  <nav class="floating-dock" aria-label="빠른 화면 이동">
+    <button id="dock-search-view" class="dock-button active" type="button">맛집 찾기</button>
+    <button id="dock-plan-view" class="dock-button" type="button">내 일정표</button>
+    <button id="dock-curated-view" class="dock-button" type="button">관리자 추천</button>
+    <button id="dock-content-view" class="dock-button" type="button">콘텐츠</button>
+    <button id="dock-community-view" class="dock-button" type="button">커뮤니티</button>
+    <button id="dock-admin-view" class="dock-button hidden" type="button">관리자</button>
+  </nav>
+
+  <script src="/demo-data.js"></script>
+  <script src="/app.js"></script>
+  <script>
+    document.getElementById('days-minus').addEventListener('click', function(){
+      var inp = document.getElementById('days-input');
+      if(parseInt(inp.value) > 1) inp.value = parseInt(inp.value) - 1;
+      inp.dispatchEvent(new Event('change'));
+    });
+    document.getElementById('days-plus').addEventListener('click', function(){
+      var inp = document.getElementById('days-input');
+      if(parseInt(inp.value) < 10) inp.value = parseInt(inp.value) + 1;
+      inp.dispatchEvent(new Event('change'));
+    });
+  </script>
+</body>
+</html>
