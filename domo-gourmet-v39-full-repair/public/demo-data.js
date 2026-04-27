@@ -1,1 +1,0 @@
-window.__DEMO_DATA__ = window.__DEMO_DATA__ || {};
