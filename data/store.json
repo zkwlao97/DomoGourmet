@@ -1,0 +1,23 @@
+{
+  "adminNotes": {},
+  "customRestaurants": {},
+  "recommendedRestaurants": {},
+  "suggestedPlaces": {},
+  "themePlaces": {},
+  "themeTemplates": {},
+  "contentPosts": {},
+  "communityPosts": {},
+  "users": {
+    "user1@example.com": {
+      "id": "user-8n6jqofb",
+      "email": "user1@example.com",
+      "username": "user1",
+      "password": "pw123",
+      "nickname": "유저1",
+      "role": "user",
+      "createdAt": "2026-04-27T04:33:57.745Z",
+      "updatedAt": "2026-04-27T04:33:57.745Z"
+    }
+  },
+  "updatedAt": "2026-04-27T04:33:57.745Z"
+}
